@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MySql.Data.MySqlClient;
+using System;
 using System.Data.Common;
 using System.Windows.Forms;
 
@@ -83,6 +84,53 @@ namespace SistemaPizzaria
             chkCatupiry.Checked = false;
             chkCebola.Checked = false;
             chkTempero.Checked = false;
+        }
+
+        private void btnSalvar_Click(object sender, EventArgs e)
+        {
+            //verifica os campos
+            if(txtValorPizza.Text == "")
+            {
+                MessageBox.Show("Campo obrigatorio");
+                txtValorPizza.Focus();
+            }
+            else if (txtValorOpcionais.Text=="")
+            {
+                MessageBox.Show("Campo obrigatorio");
+                txtValorOpcionais.Focus();
+            }
+            else if (txtValorPagar.Text=="")
+            {
+                MessageBox.Show("Campo obrigatorio");
+                txtValorPagar.Focus();
+            }else
+            {
+                // tratamento de erros 
+                try
+                {
+                    //inserindo dados no banco de dados
+                    string sql = "insert into tbPedido(tipoPizza,valorPizza,valorOpcao,valorTotal) values(@pizza,@vpizza,@vopcao,@total)";
+                    MySqlCommand cmd = new MySqlCommand(sql, con.ConnectarBD());
+                    cmd.Parameters.Add("@pizza", MySqlDbType.Text).Value = cmbTamanhoPizza.Text;
+                    cmd.Parameters.Add("@vpizza", MySqlDbType.Text).Value = txtValorPizza.Text;
+                    cmd.Parameters.Add("@vopcao", MySqlDbType.Text).Value = txtValorOpcionais.Text;
+                    cmd.Parameters.Add("@total", MySqlDbType.Text).Value = txtValorPagar.Text;
+                    cmd.ExecuteNonQuery();
+
+                    MessageBox.Show("Dados cadastrados com Sucesso !!!");
+                    cmbTamanhoPizza.Text = "";
+                    txtValorPizza.Text = "";
+                    txtValorOpcionais.Text = "";
+                    txtValorPagar.Text = "";
+                    cmbTamanhoPizza.Focus();
+                    con.DesConnectarBD();
+
+                }
+                catch (Exception erro)
+                {
+                    MessageBox.Show(erro.Message);
+                }
+            }
         }
     }
 }
