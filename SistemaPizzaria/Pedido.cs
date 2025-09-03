@@ -1,6 +1,9 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
+using System.CodeDom;
+using System.Data;
 using System.Data.Common;
+using System.Diagnostics.Eventing.Reader;
 using System.Windows.Forms;
 
 namespace SistemaPizzaria
@@ -22,6 +25,18 @@ namespace SistemaPizzaria
 
         private void btnNovo_Click(object sender, EventArgs e)
         {
+            chkBorda.Checked = false;
+            chkCatupiry.Checked = false;
+            chkCebola.Checked = false;
+            chkTempero.Checked = false;
+
+            txtValorOpcionais.Clear();
+            txtValorPagar.Clear();
+            txtValorPizza.Clear();
+
+            cmbTamanhoPizza.SelectedIndex = 0;
+
+            txtPesquisar.Clear();
 
         }
 
@@ -38,16 +53,18 @@ namespace SistemaPizzaria
             //DECLARANDO AS VARIAVEIS 
             Double valorPizza = 0, valorOpcao = 0, valorTotal = 0;
 
-            if(cmbTamanhoPizza.SelectedIndex == 0)
+            if (cmbTamanhoPizza.SelectedIndex == 0)
             {
                 valorPizza = 20;
-            }else if ( cmbTamanhoPizza.SelectedIndex == 1 )
+            }
+            else if (cmbTamanhoPizza.SelectedIndex == 1)
             {
                 valorPizza = 30;
-            }else if (cmbTamanhoPizza.SelectedIndex == 2)
+            }
+            else if (cmbTamanhoPizza.SelectedIndex == 2)
             {
                 valorPizza = 50;
-            } 
+            }
             if (chkBorda.Checked == true)
             {
                 valorOpcao = valorOpcao + 5;
@@ -65,7 +82,7 @@ namespace SistemaPizzaria
             {
                 valorOpcao = valorOpcao + 4;
             }
-            else 
+            else
             {
 
             }
@@ -89,21 +106,22 @@ namespace SistemaPizzaria
         private void btnSalvar_Click(object sender, EventArgs e)
         {
             //verifica os campos
-            if(txtValorPizza.Text == "")
+            if (txtValorPizza.Text == "")
             {
                 MessageBox.Show("Campo obrigatorio");
                 txtValorPizza.Focus();
             }
-            else if (txtValorOpcionais.Text=="")
+            else if (txtValorOpcionais.Text == "")
             {
                 MessageBox.Show("Campo obrigatorio");
                 txtValorOpcionais.Focus();
             }
-            else if (txtValorPagar.Text=="")
+            else if (txtValorPagar.Text == "")
             {
                 MessageBox.Show("Campo obrigatorio");
                 txtValorPagar.Focus();
-            }else
+            }
+            else
             {
                 // tratamento de erros 
                 try
@@ -130,6 +148,75 @@ namespace SistemaPizzaria
                 {
                     MessageBox.Show(erro.Message);
                 }
+            }
+        }
+
+        private void dgvPedido_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            CarregarPedidos();
+
+        }
+
+        //METODO QUE VAI CARREGAR AS INFORMAÇOES DO DATA GRID
+        public void CarregarPedidos()
+        {
+            try
+            {
+                txtCodigo.Text = dgvPedido.SelectedRows[0].Cells[0].Value.ToString();
+                cmbTamanhoPizza.Text = dgvPedido.SelectedRows[0].Cells[1].Value.ToString();
+                txtValorPizza.Text = dgvPedido.SelectedRows[0].Cells[2].Value.ToString();
+                txtValorOpcionais.Text = dgvPedido.SelectedRows[0].Cells[3].Value.ToString();
+                txtValorPagar.Text = dgvPedido.SelectedRows[0].Cells[4].Value.ToString();
+
+            }
+            catch (Exception erro)
+            {
+                {
+                    MessageBox.Show("Erro ao clicar" + erro);
+                }
+            }
+        }
+
+        private void txtPesquisar_TextChanged(object sender, EventArgs e)
+        {
+            if (txtPesquisar.Text != "")
+            {
+                try
+                {
+                    con.ConnectarBD();
+                    MySqlCommand cmd = new MySqlCommand();
+                    cmd.CommandText = "select * from tbPedido";
+
+                    cmd.Connection = con.ConnectarBD();
+                    MySqlDataAdapter da = new MySqlDataAdapter();
+                    DataTable dt = new DataTable();
+                    da.SelectCommand = cmd;
+                    da.Fill(dt);
+                    dgvPedido.DataSource = dt;
+                    con.DesConnectarBD();
+                }
+                catch (Exception error)
+                {
+                    MessageBox.Show(error.Message);
+                }
+            }
+            else
+            {
+                // deixa o data grid limpo 
+                dgvPedido.DataSource = null;
+            }
+        }
+
+        private void btnSair_Click(object sender, EventArgs e)
+        {
+            DialogResult sair = MessageBox.Show("deseja sair ?",  "sair ", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+            if (sair == DialogResult.No) { 
+                Pedido ped = new Pedido();
+                ped.Show();
+                this.Hide();
+            }else
+            {
+                Application.Exit();
             }
         }
     }
